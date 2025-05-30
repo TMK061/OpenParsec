@@ -25,7 +25,11 @@ class ParsecViewController :UIViewController {
 	var u:UIImageView?
 	var lastImg: CGImage?
 	
-	var lastLongPressPoint : CGPoint = CGPoint()
+        var lastLongPressPoint : CGPoint = CGPoint()
+
+        // Accumulate fractional mouse movement to keep pointer motion smooth
+        private var deltaAccumulatorX: CGFloat = 0
+        private var deltaAccumulatorY: CGFloat = 0
 	
 	var keyboardAccessoriesView : UIView?
 	var keyboardHeight : CGFloat = 0.0
@@ -209,13 +213,24 @@ extension ParsecViewController : UIGestureRecognizerDelegate {
 
 		} else if gestureRecognizer.numberOfTouches == 1 {
 
-			if SettingsHandler.cursorMode == .direct {
-				let position = gestureRecognizer.location(in: gestureRecognizer.view)
-				CParsec.sendMousePosition(Int32(position.x), Int32(position.y))
-			} else {
-				let delta = gestureRecognizer.velocity(in: gestureRecognizer.view)
-				CParsec.sendMouseDelta(Int32(Float(delta.x) / 60 * SettingsHandler.mouseSensitivity), Int32(Float(delta.y) / 60 * SettingsHandler.mouseSensitivity))
-			}
+                        if SettingsHandler.cursorMode == .direct {
+                                let position = gestureRecognizer.location(in: gestureRecognizer.view)
+                                CParsec.sendMousePosition(Int32(position.x), Int32(position.y))
+                        } else {
+                                let translation = gestureRecognizer.translation(in: gestureRecognizer.view)
+
+                                // accumulate fractional movement for smoother pointer motion
+                                deltaAccumulatorX += translation.x * CGFloat(SettingsHandler.mouseSensitivity)
+                                deltaAccumulatorY += translation.y * CGFloat(SettingsHandler.mouseSensitivity)
+                                let dx = Int32(deltaAccumulatorX)
+                                let dy = Int32(deltaAccumulatorY)
+                                if dx != 0 || dy != 0 {
+                                        CParsec.sendMouseDelta(dx, dy)
+                                        deltaAccumulatorX -= CGFloat(dx)
+                                        deltaAccumulatorY -= CGFloat(dy)
+                                }
+                                gestureRecognizer.setTranslation(.zero, in: gestureRecognizer.view)
+                        }
 
 			
 			if gestureRecognizer.state == .began && SettingsHandler.cursorMode == .direct {
