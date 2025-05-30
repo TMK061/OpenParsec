@@ -209,13 +209,17 @@ extension ParsecViewController : UIGestureRecognizerDelegate {
 
 		} else if gestureRecognizer.numberOfTouches == 1 {
 
-			if SettingsHandler.cursorMode == .direct {
-				let position = gestureRecognizer.location(in: gestureRecognizer.view)
-				CParsec.sendMousePosition(Int32(position.x), Int32(position.y))
-			} else {
-				let delta = gestureRecognizer.velocity(in: gestureRecognizer.view)
-				CParsec.sendMouseDelta(Int32(Float(delta.x) / 60 * SettingsHandler.mouseSensitivity), Int32(Float(delta.y) / 60 * SettingsHandler.mouseSensitivity))
-			}
+                        if SettingsHandler.cursorMode == .direct {
+                                let position = gestureRecognizer.location(in: gestureRecognizer.view)
+                                CParsec.sendMousePosition(Int32(position.x), Int32(position.y))
+                        } else {
+                                let translation = gestureRecognizer.translation(in: gestureRecognizer.view)
+                                CParsec.sendMouseDelta(
+                                        Int32(Float(translation.x) * SettingsHandler.mouseSensitivity),
+                                        Int32(Float(translation.y) * SettingsHandler.mouseSensitivity)
+                                )
+                                gestureRecognizer.setTranslation(.zero, in: gestureRecognizer.view)
+                        }
 
 			
 			if gestureRecognizer.state == .began && SettingsHandler.cursorMode == .direct {
