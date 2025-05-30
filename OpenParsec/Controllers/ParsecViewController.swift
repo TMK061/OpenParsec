@@ -209,13 +209,17 @@ extension ParsecViewController : UIGestureRecognizerDelegate {
 
 		} else if gestureRecognizer.numberOfTouches == 1 {
 
-			if SettingsHandler.cursorMode == .direct {
-				let position = gestureRecognizer.location(in: gestureRecognizer.view)
-				CParsec.sendMousePosition(Int32(position.x), Int32(position.y))
-			} else {
-				let delta = gestureRecognizer.velocity(in: gestureRecognizer.view)
-				CParsec.sendMouseDelta(Int32(Float(delta.x) / 60 * SettingsHandler.mouseSensitivity), Int32(Float(delta.y) / 60 * SettingsHandler.mouseSensitivity))
-			}
+                        if SettingsHandler.cursorMode == .direct {
+                                let position = gestureRecognizer.location(in: gestureRecognizer.view)
+                                CParsec.sendMousePosition(Int32(position.x), Int32(position.y))
+                        } else {
+                                let translation = gestureRecognizer.translation(in: gestureRecognizer.view)
+                                CParsec.sendMouseDelta(
+                                        Int32(Float(translation.x) * SettingsHandler.mouseSensitivity),
+                                        Int32(Float(translation.y) * SettingsHandler.mouseSensitivity)
+                                )
+                                gestureRecognizer.setTranslation(.zero, in: gestureRecognizer.view)
+                        }
 
 			
 			if gestureRecognizer.state == .began && SettingsHandler.cursorMode == .direct {
@@ -566,8 +570,39 @@ extension ParsecViewController : UIKeyInput, UITextInputTraits {
 		resignFirstResponder()
 	}
 	
-	@objc func showKeyboard() {
-		becomeFirstResponder()
-	}
-	
+        @objc func showKeyboard() {
+                becomeFirstResponder()
+        }
+
+}
+
+// MARK: - Apple Pencil Handling
+extension ParsecViewController {
+        private func processPencilTouches(_ touches: Set<UITouch>, phase: UITouch.Phase) {
+                guard let pencilTouch = touches.first(where: { $0.type == .pencil }) else { return }
+                let location = pencilTouch.location(in: view)
+                let force = pencilTouch.force
+                let isDown = phase != .ended && phase != .cancelled
+                CParsec.sendPenInput(x: Int32(location.x), y: Int32(location.y), pressure: Float(force), isDown: isDown)
+        }
+
+        override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+                super.touchesBegan(touches, with: event)
+                processPencilTouches(touches, phase: .began)
+        }
+
+        override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+                super.touchesMoved(touches, with: event)
+                processPencilTouches(touches, phase: .moved)
+        }
+
+        override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+                super.touchesEnded(touches, with: event)
+                processPencilTouches(touches, phase: .ended)
+        }
+
+        override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+                super.touchesCancelled(touches, with: event)
+                processPencilTouches(touches, phase: .cancelled)
+        }
 }
