@@ -38,7 +38,8 @@ class ParsecGLKRenderer:NSObject, GLKViewDelegate, GLKViewControllerDelegate
 		    CParsec.setFrame(view.frame.size.width, view.frame.size.height, view.contentScaleFactor)
 	        lastWidth = view.frame.size.width
 		}
-		CParsec.renderGLFrame(timeout:16)
+                let timeout: UInt32 = SettingsHandler.lowPowerMode ? 33 : 16
+                CParsec.renderGLFrame(timeout: timeout)
 		
 		updateImage()
 		
