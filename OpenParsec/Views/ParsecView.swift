@@ -1,13 +1,15 @@
 import SwiftUI
 import ParsecSDK
 import Foundation
+import UserNotifications
 
 struct ParsecStatusBar : View {
-	@Binding var showMenu : Bool
-	@State var metricInfo:String = "Loading..."
-	@Binding var showDCAlert:Bool
-	@Binding var DCAlertText:String
-	let timer = Timer.publish(every: 0.2, on: .main, in: .common).autoconnect()
+        @Binding var showMenu : Bool
+        @State var metricInfo:String = "Loading..."
+        @Binding var showDCAlert:Bool
+        @Binding var DCAlertText:String
+        @State private var reconnectAttempts:Int = 0
+        @State private var timer = Timer.publish(every: 0.2, on: .main, in: .common).autoconnect()
 	
 	var body: some View {
 		// Overlay elements
@@ -29,10 +31,11 @@ struct ParsecStatusBar : View {
 			.edgesIgnoringSafeArea(.all)
 
 		}
-		EmptyView()
-			.onReceive(timer) { p in
-				poll()
-			}
+                EmptyView()
+                        .onReceive(timer) { _ in
+                                poll()
+                        }
+                        .onDisappear { timer.upstream.connect().cancel() }
 	}
 	
 	func poll()
@@ -42,21 +45,35 @@ struct ParsecStatusBar : View {
 			return // no need to poll if we aren't connected anymore
 		}
 		
-		var pcs = ParsecClientStatus()
-		let status = CParsec.getStatusEx(&pcs)
-		
-		if status != PARSEC_OK
-		{
-			DCAlertText = "Disconnected (code \(status.rawValue))"
-			showDCAlert = true
-			return
-		}
+                var pcs = ParsecClientStatus()
+                let status = CParsec.getStatusEx(&pcs)
 
-		// FIXME: This may cause memory leak?
-		
+                if status != PARSEC_OK
+                {
+                        if SettingsHandler.autoReconnect && !DataManager.model.currentPeerID.isEmpty && reconnectAttempts < 3 {
+                                reconnectAttempts += 1
+                                _ = CParsec.connect(DataManager.model.currentPeerID)
+                                return
+                        }
+                        DCAlertText = "Disconnected (code \(status.rawValue))"
+                        showDCAlert = true
+                        let content = UNMutableNotificationContent()
+                        content.title = "Parsec"
+                        content.body = DCAlertText
+                        let req = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+                        UNUserNotificationCenter.current().add(req, withCompletionHandler: nil)
+                        return
+                }
+
+                reconnectAttempts = 0
+
 		if showMenu
 		{
-			let str = String.fromBuffer(&pcs.decoder.0.name.0, length:16)
+                        let str = withUnsafePointer(to: &pcs.decoder.0.name) {
+                                $0.withMemoryRebound(to: CChar.self, capacity: 16) {
+                                        String(cString: $0)
+                                }
+                        }
 			metricInfo = "Decode \(String(format:"%.2f", pcs.`self`.metrics.0.decodeLatency))ms    Encode \(String(format:"%.2f", pcs.`self`.metrics.0.encodeLatency))ms    Network \(String(format:"%.2f", pcs.`self`.metrics.0.networkLatency))ms    Bitrate \(String(format:"%.2f", pcs.`self`.metrics.0.bitrate))Mbps    \(pcs.decoder.0.h265 ? "H265" : "H264") \(pcs.decoder.0.width)x\(pcs.decoder.0.height) \(pcs.decoder.0.color444 ? "4:4:4" : "4:2:0") \(str)"
 		}
 	}

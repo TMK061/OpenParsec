@@ -49,14 +49,14 @@ class ParsecGLKViewController : ParsecPlayground {
 
 	}
 
-	private func setupGLKViewController() {
-		glkView.context = EAGLContext(api: .openGLES3)!
-		glkViewController.view = glkView
-		glkViewController.preferredFramesPerSecond = 60
-		self.viewController.addChild(glkViewController)
-		self.viewController.view.addSubview(glkViewController.view)
-		self.glkViewController.didMove(toParent: self.viewController)
-	}
+        private func setupGLKViewController() {
+                glkView.context = EAGLContext(api: .openGLES3)!
+                glkViewController.view = glkView
+                glkViewController.preferredFramesPerSecond = SettingsHandler.lowPowerMode ? 30 : 60
+                self.viewController.addChild(glkViewController)
+                self.viewController.view.addSubview(glkViewController.view)
+                self.glkViewController.didMove(toParent: self.viewController)
+        }
 	
 	func cleanUp() {
 		
