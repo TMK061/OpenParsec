@@ -17,6 +17,7 @@ Before building, make sure you have the Parsec SDK framework symlinked or copied
 
 ## Touch Control
 You can set the touch mode you want to use in settings. Touchpad mode and direct touch mode are supported.
+Touchpad mode now uses gesture translation for smoother, more natural pointer movement.
 
 When streaming, you can tap with 3 fingers to bring up the on-screen keyboard.
 
