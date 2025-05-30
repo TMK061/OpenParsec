@@ -4,6 +4,15 @@ OpenParsec is a simple, open-source Parsec client for iOS/iPadOS written in Swif
 
 This project is still a major WIP, so apologies for the currently lackluster documentation. I'm also very new to both Swift and SwiftUI so I'm sure there are many places for improvement.
 
+## Project Structure
+The source files under `OpenParsec/` are organized into folders to keep related code grouped together:
+
+- `App/` – application lifecycle classes
+- `Views/` – SwiftUI view files
+- `Controllers/` – view controllers and input handlers
+- `Services/` – Parsec integrations, renderers, and utilities
+- `Models/` – data models and settings helpers
+
 Before building, make sure you have the Parsec SDK framework symlinked or copied to the `Frameworks` folder. Builds were tested on Xcode Version 12.5.
 
 ## Touch Control
