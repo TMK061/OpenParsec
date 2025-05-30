@@ -80,11 +80,12 @@ protocol ParsecService {
 	func sendVirtualKeyboardInput(text: String)
 	func sendVirtualKeyboardInput(text: String, isOn: Bool)
 	func sendGameControllerButtonMessage(controllerId: UInt32, _ button: ParsecGamepadButton, pressed: Bool)
-	func sendGameControllerAxisMessage(controllerId: UInt32, _ button: ParsecGamepadAxis, _ value: Int16)
-	func sendGameControllerUnplugMessage(controllerId: UInt32)
-	func sendWheelMsg(x: Int32, y: Int32)
-	func sendUserData(type: ParsecUserDataType, message: Data)
-	func updateHostVideoConfig()
+        func sendGameControllerAxisMessage(controllerId: UInt32, _ button: ParsecGamepadAxis, _ value: Int16)
+        func sendGameControllerUnplugMessage(controllerId: UInt32)
+        func sendWheelMsg(x: Int32, y: Int32)
+        func sendPenInput(x: Int32, y: Int32, pressure: Float, isDown: Bool)
+        func sendUserData(type: ParsecUserDataType, message: Data)
+        func updateHostVideoConfig()
 }
 
 class CParsec
@@ -212,13 +213,17 @@ class CParsec
 		parsecImpl.sendGameControllerUnplugMessage(controllerId: controllerId)
 	}
 	
-	static func sendWheelMsg(x: Int32, y: Int32) {
-		parsecImpl.sendWheelMsg(x: x, y: y)
-	}
-	
-	static func sendUserData(type: ParsecUserDataType, message: Data) {
-		parsecImpl.sendUserData(type: type, message: message)
-	}
+        static func sendWheelMsg(x: Int32, y: Int32) {
+                parsecImpl.sendWheelMsg(x: x, y: y)
+        }
+
+        static func sendPenInput(x: Int32, y: Int32, pressure: Float, isDown: Bool) {
+                parsecImpl.sendPenInput(x: x, y: y, pressure: pressure, isDown: isDown)
+        }
+
+        static func sendUserData(type: ParsecUserDataType, message: Data) {
+                parsecImpl.sendUserData(type: type, message: message)
+        }
 	
 	static func getImpl() -> ParsecService {
 		return parsecImpl

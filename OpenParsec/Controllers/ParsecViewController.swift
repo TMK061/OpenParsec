@@ -581,8 +581,39 @@ extension ParsecViewController : UIKeyInput, UITextInputTraits {
 		resignFirstResponder()
 	}
 	
-	@objc func showKeyboard() {
-		becomeFirstResponder()
-	}
-	
+        @objc func showKeyboard() {
+                becomeFirstResponder()
+        }
+
+}
+
+// MARK: - Apple Pencil Handling
+extension ParsecViewController {
+        private func processPencilTouches(_ touches: Set<UITouch>, phase: UITouch.Phase) {
+                guard let pencilTouch = touches.first(where: { $0.type == .pencil }) else { return }
+                let location = pencilTouch.location(in: view)
+                let force = pencilTouch.force
+                let isDown = phase != .ended && phase != .cancelled
+                CParsec.sendPenInput(x: Int32(location.x), y: Int32(location.y), pressure: Float(force), isDown: isDown)
+        }
+
+        override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+                super.touchesBegan(touches, with: event)
+                processPencilTouches(touches, phase: .began)
+        }
+
+        override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+                super.touchesMoved(touches, with: event)
+                processPencilTouches(touches, phase: .moved)
+        }
+
+        override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+                super.touchesEnded(touches, with: event)
+                processPencilTouches(touches, phase: .ended)
+        }
+
+        override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+                super.touchesCancelled(touches, with: event)
+                processPencilTouches(touches, phase: .cancelled)
+        }
 }

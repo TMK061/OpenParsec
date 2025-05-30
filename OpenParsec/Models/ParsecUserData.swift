@@ -26,7 +26,9 @@ struct ParsecDisplayConfig : Codable, Hashable {
 }
 
 enum ParsecUserDataType : UInt32 {
-	case getVideoConfig = 9
-	case getAdapterInfo = 10
-	case setVideoConfig = 11
+        case getVideoConfig = 9
+        case getAdapterInfo = 10
+        case setVideoConfig = 11
+        /// Custom message for transmitting Apple Pencil events to the host
+        case penInput = 100
 }

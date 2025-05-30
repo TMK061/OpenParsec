@@ -458,13 +458,26 @@ class ParsecSDKBridge: ParsecService
 		ParsecClientSendMessage(_parsec, &pmsg)
 	}
 	
-	func sendWheelMsg(x: Int32, y: Int32) {
-		var pmsg = ParsecMessage()
-		pmsg.type = MESSAGE_MOUSE_WHEEL;
-		pmsg.mouseWheel.x = x
-		pmsg.mouseWheel.y = y
-		ParsecClientSendMessage(_parsec, &pmsg)
-	}
+        func sendWheelMsg(x: Int32, y: Int32) {
+                var pmsg = ParsecMessage()
+                pmsg.type = MESSAGE_MOUSE_WHEEL;
+                pmsg.mouseWheel.x = x
+                pmsg.mouseWheel.y = y
+                ParsecClientSendMessage(_parsec, &pmsg)
+        }
+
+        func sendPenInput(x: Int32, y: Int32, pressure: Float, isDown: Bool) {
+                struct PenPayload: Codable {
+                        var x: Int32
+                        var y: Int32
+                        var pressure: Float
+                        var down: Bool
+                }
+                let payload = PenPayload(x: x, y: y, pressure: pressure, down: isDown)
+                if let data = try? JSONEncoder().encode(payload) {
+                        sendUserData(type: .penInput, message: data)
+                }
+        }
 	
 	func startBackgroundTask(){
 	
