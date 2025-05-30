@@ -574,11 +574,12 @@ struct MainView:View
 		}
 	}
 
-	func connectTo(_ who:IdentifiableHostInfo)
-	{
-		CParsec.initialize()
-		connectingToName = who.hostname
-		withAnimation { isConnecting = true }
+        func connectTo(_ who:IdentifiableHostInfo)
+        {
+                CParsec.initialize()
+                connectingToName = who.hostname
+                DataManager.model.currentPeerID = who.id
+                withAnimation { isConnecting = true }
 
 		var status = CParsec.connect(who.id)
 

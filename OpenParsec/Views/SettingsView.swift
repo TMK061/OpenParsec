@@ -11,8 +11,11 @@ struct SettingsView:View
 	@State var resolution : ParsecResolution = SettingsHandler.resolution
 	@State var cursorScale:Float = SettingsHandler.cursorScale
 	@State var mouseSensitivity:Float = SettingsHandler.mouseSensitivity
-	@State var noOverlay:Bool = SettingsHandler.noOverlay
-	@State var hideStatusBar:Bool = SettingsHandler.hideStatusBar
+        @State var noOverlay:Bool = SettingsHandler.noOverlay
+        @State var hideStatusBar:Bool = SettingsHandler.hideStatusBar
+        @State var lowPowerMode: Bool = SettingsHandler.lowPowerMode
+        @State var autoReconnect: Bool = SettingsHandler.autoReconnect
+        @State var orientation: OrientationLock = SettingsHandler.orientationLock
 	
 	let resolutionChoices : [Choice<ParsecResolution>]
 
@@ -139,12 +142,27 @@ struct SettingsView:View
                                 Toggle("", isOn:$noOverlay)
                                     .frame(width:80)
                             }
-							CatItem("Hide Status Bar")
-							{
-								Toggle("", isOn:$hideStatusBar)
-									.frame(width:80)
-							}
-						}
+                            CatItem("Hide Status Bar")
+                            {
+                                    Toggle("", isOn:$hideStatusBar)
+                                            .frame(width:80)
+                            }
+                            CatItem("Low Power Mode") {
+                                    Toggle("", isOn: $lowPowerMode)
+                                            .frame(width:80)
+                            }
+                            CatItem("Auto Reconnect") {
+                                    Toggle("", isOn: $autoReconnect)
+                                            .frame(width:80)
+                            }
+                            CatItem("Orientation") {
+                                    MultiPicker(selection: $orientation, options: [
+                                            Choice("Automatic", OrientationLock.auto),
+                                            Choice("Portrait", OrientationLock.portrait),
+                                            Choice("Landscape", OrientationLock.landscape)
+                                    ])
+                            }
+                        }
 						Text("More options coming soon.")
 							.multilineTextAlignment(.center)
 							.opacity(0.5)
@@ -170,11 +188,14 @@ struct SettingsView:View
 		SettingsHandler.resolution = resolution
 		SettingsHandler.cursorMode = cursorMode
 		SettingsHandler.cursorScale = cursorScale
-		SettingsHandler.rightClickPosition = rightClickPosition
-		SettingsHandler.noOverlay = noOverlay
-		SettingsHandler.hideStatusBar = hideStatusBar
-		SettingsHandler.mouseSensitivity = mouseSensitivity
-		SettingsHandler.save()
+                SettingsHandler.rightClickPosition = rightClickPosition
+                SettingsHandler.noOverlay = noOverlay
+                SettingsHandler.hideStatusBar = hideStatusBar
+                SettingsHandler.lowPowerMode = lowPowerMode
+                SettingsHandler.autoReconnect = autoReconnect
+                SettingsHandler.orientationLock = orientation
+                SettingsHandler.mouseSensitivity = mouseSensitivity
+                SettingsHandler.save()
 		
 		visible = false
 	}

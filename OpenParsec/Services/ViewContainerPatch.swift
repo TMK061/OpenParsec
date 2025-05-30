@@ -11,13 +11,17 @@ import UIKit
 
 // from UTM's https://github.com/utmapp/UTM/blob/b03486b8825d5a0e8b9f93162a49a4c98ebab6a1/Platform/iOS/UTMPatches.swift#L33
 final class UTMViewControllerPatches {
-	static private var isPatched: Bool = false
-	
-	/// Installs the patches
-	/// TODO: Some thread safety/race issues etc
-	static func patchAll() {
-		UIViewController.patchViewController()
-	}
+        static private var isPatched: Bool = false
+        private static let patchQueue = DispatchQueue(label: "com.openparsec.viewControllerPatch")
+
+        /// Installs the patches in a thread safe manner
+        static func patchAll() {
+                patchQueue.sync {
+                        guard !isPatched else { return }
+                        isPatched = true
+                        UIViewController.patchViewController()
+                }
+        }
 }
 
 fileprivate extension NSObject {
